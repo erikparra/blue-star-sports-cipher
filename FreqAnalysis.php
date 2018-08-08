@@ -6,24 +6,55 @@ ini_set('display_startup_errors', TRUE);
 
 function freqanalysis($file){
   $charCount = 0;
-  $array = array(
-      "a" => 0, "b" => 0, "c" => 0, "d" => 0, "e" => 0, "f" => 0,
-      "g" => 0, "h" => 0, "i" => 0, "j" => 0, "k" => 0, "l" => 0,
-      "m" => 0, "n" => 0, "o" => 0, "p" => 0, "q" => 0, "r" => 0,
-      "s" => 0, "t" => 0, "u" => 0, "v" => 0, "w" => 0, "x" => 0,
-      "y" => 0, "z" => 0,
-  );
+  $biCount = 0;
+  $triCount = 0;
+  $uni = array();
+  $bi = array();
+  $tri = array();
 
   $handle = fopen($file, "r");
   if ($handle) {  //verify file exists
     while (($line = fgets($handle)) !== false) {  // read file line by line
-      for($i = 0; $i < strlen($line); $i++){  // read line char by char
+      $lineLength = strlen($line);
+      for($i = 0; $i < $lineLength; $i++){  // read line char by char
         $curChar = strtolower($line[$i]);
         if( ctype_alpha($curChar) ){ // check if char is alphabetic
-          //if( array_key_exists($line[$i], $array ) ){ // check if char in array
-          $array[$curChar]++;
+          // check uni - char
+          if (array_key_exists($curChar, $uni)) {
+            $uni[$curChar]++;
+          }
+          else {
+            $uni[$curChar] = 1;
+          }
           $charCount++;
-          //}
+
+          // check bi - chars
+          if( $i+1 < $lineLength ){
+            $bi_currentChar = $curChar.strtolower($line[$i+1]);
+            if( ctype_alpha($bi_currentChar) ){
+              if (array_key_exists($bi_currentChar, $bi)) {
+                $bi[$bi_currentChar]++;
+              }
+              else {
+                $bi[$bi_currentChar] = 1;
+              }
+              $biCount++;
+
+              // check tri - chars
+              if( $i+2 < $lineLength ){
+                $tri_currentChar = $bi_currentChar.strtolower($line[$i+2]);
+                if( ctype_alpha($tri_currentChar) ){
+                  if (array_key_exists($tri_currentChar, $tri)) {
+                    $tri[$tri_currentChar]++;
+                  }
+                  else {
+                    $tri[$tri_currentChar] = 1;
+                  }
+                  $triCount++;
+                }
+              }
+            }
+          }
         }
       }
     }
@@ -34,10 +65,17 @@ function freqanalysis($file){
     echo "ERROR OPENING FILE";
   }
 
-  foreach ($array as $key => $value) {
-    $array[$key] = $value/$charCount;
+  foreach ($uni as $key => $value) {
+    $uni[$key] = $value/$charCount;
   }
-  return $array;
+
+  echo "</br></br>";
+  print_r($uni);
+  echo "</br></br>";
+  print_r($bi);
+  echo "</br></br>";
+  print_r($tri);
+  return $uni;
 }
 
 $plain_analysis = freqanalysis("plain.txt");
