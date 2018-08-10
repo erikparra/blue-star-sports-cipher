@@ -37,12 +37,12 @@ class textAnalysis {
 
             // check if word contains single quote
             if( preg_match("/\S*'\S*/i", $w) ){
-              insertIntoArray($w, $this->$quote_words, $this->$quoteCount);
+              $this->insertIntoArray($w, $this->quote_words, $this->quoteCount);
             }
 
             // check if word contains repeated letters
             if( preg_match("/([a-z])\1+/i", $w) ){
-              insertIntoArray($w, $this->$repeat_words, $this->$repeatCount);
+              $this->insertIntoArray($w, $this->repeat_words, $this->repeatCount);
             }
 
 
@@ -66,20 +66,20 @@ class textAnalysis {
               $c = $w[$i];
               // check if char is alphabetic
               if( ctype_alpha($c) ){
-                $this->insertIntoArray($c, $this->$uni, $this->$charCount);
+                $this->insertIntoArray($c, $this->uni, $this->uniCount);
 
                 // check bi - chars
                 if( $i+1 < $wLength ){
                   $bi_char = $c."".$w[$i+1];
                   //check if char alphabetic
                   if( ctype_alpha($bi_char) ){
-                    $this->insertIntoArray($bi_char, $bi, $biCount);
+                    $this->insertIntoArray($bi_char, $this->bi, $this->biCount);
 
                     if( $i+2 < $wLength ){
                       $tri_char = $bi_char."".$w[$i+2];
                       //check if char alphabetic
                       if( ctype_alpha($tri_char) ){
-                        $this->insertIntoArray($tri_char, $tri, $triCount);
+                        $this->insertIntoArray($tri_char, $this->tri, $this->triCount);
                       }
                     }
                   }
@@ -92,25 +92,25 @@ class textAnalysis {
       fclose($handle);
 
       // Complete analysis on each array
-      foreach ($uni as $key => $value) {
-        $uni[$key] = $value/$uniCount;
+      foreach ($this->uni as $key => $value) {
+        $this->uni[$key] = $value/$this->uniCount;
       }
-      foreach ($bi as $key => $value){
-        $bi[$key] = $value/$biCount;
+      foreach ($this->bi as $key => $value){
+        $this->bi[$key] = $value/$this->biCount;
       }
-      foreach ($tri as $key => $value){
-        $tri[$key] = $value/$triCount;
+      foreach ($this->tri as $key => $value){
+        $this->tri[$key] = $value/$this->triCount;
       }
-      foreach ($words as $key => $value){
+      foreach ($this->words as $key => $value){
         foreach( $value as $k => $v ){
-          $words[$key][$k] = $v/$wordsCount;
+          $this->words[$key][$k] = $v/$this->wordsCount;
         }
       }
-      foreach ($quote_words as $key => $value){
-        $quote_words[$key] = $value/$quoteCount;
+      foreach ($this->quote_words as $key => $value){
+        $this->quote_words[$key] = $value/$this->quoteCount;
       }
-      foreach ($repeat_words as $key => $value){
-        $repeat_words[$key] = $value/$repeatCount;
+      foreach ($this->repeat_words as $key => $value){
+        $this->repeat_words[$key] = $value/$this->repeatCount;
       }
     }
     else {
@@ -132,35 +132,35 @@ class textAnalysis {
 
 
   public function sort(){
-    arsort($uni);
-    arsort($bi);
-    arsort($tri);
-    krsort($words);
-    foreach( $words as $wordArray ){
+    arsort($this->uni);
+    arsort($this->bi);
+    arsort($this->tri);
+    krsort($this->words);
+    foreach( $this->words as $wordArray ){
       arsort($wordArray);
     }
-    arsort($quote_words);
-    arsort($repeat_words);
+    arsort($this->quote_words);
+    arsort($this->repeat_words);
   }
 
   public function printObject(){
     echo "|UNI|</br>";
-    print_r($uni);
+    print_r($this->uni);
     echo "</br></br>";
     echo "|BI|</br>";
-    print_r($bi);
+    print_r($this->bi);
     echo "</br></br>";
     echo "|TRI|</br>";
-    print_r($tri);
+    print_r($this->tri);
     echo "</br></br>";
     echo "|QUOTE|</br>";
-    print_r($quote_words);
+    print_r($this->quote_words);
     echo "</br></br>";
     echo "|REPEAT|</br>";
-    print_r($repeat_words);
+    print_r($this->repeat_words);
     echo "</br></br>";
     echo "|WORDS|</br>";
-    print_r($words);
+    print_r($this->words);
 
   }
 
