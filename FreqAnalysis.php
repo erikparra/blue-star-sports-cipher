@@ -40,10 +40,10 @@ class textAnalysis {
               $this->insertIntoArray($w, $this->quote_words, $this->quoteCount);
             }
 
-            // NOT WORKING - check if word contains repeated letters
-            //if( preg_match("/([a-z])\1+/i", $w) ){
-            //  $this->insertIntoArray($w, $this->repeat_words, $this->repeatCount);
-            //}
+            // REQUIRES SINGLE QUOTE - check if word contains repeated letters
+            if( preg_match('/([a-z])\1+/i', $w) ){
+              $this->insertIntoArray($w, $this->repeat_words, $this->repeatCount);
+            }
 
             // insert word into array
             if( array_key_exists($wLength, $this->words) ){
@@ -135,8 +135,8 @@ class textAnalysis {
     arsort($this->bi);
     arsort($this->tri);
     ksort($this->words);
-    foreach( $this->words as $wordArray ){
-      arsort($wordArray);
+    foreach( $this->words as $k => $v){
+      arsort($this->words[$k]);
     }
     arsort($this->quote_words);
     arsort($this->repeat_words);
