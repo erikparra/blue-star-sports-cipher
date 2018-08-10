@@ -3,54 +3,82 @@ error_reporting(E_ALL);
 ini_set('display_errors', TRUE);
 ini_set('display_startup_errors', TRUE);
 
+// Check if key exists
+function insertIntoArray(&$arr, $chars, &$count){
+  if( array_key_exists($chars, $arr) ){
+    $arr[$chars]++;
+  }
+  else{
+    $arr[$chars] = 1;
+  }
+  $count++;
+}
 
 function freqanalysis($file){
   $charCount = 0;
   $biCount = 0;
   $triCount = 0;
+  $wordCount = 0;
   $uni = array();
   $bi = array();
   $tri = array();
+  $words = array();
+  $quote_words = array();
+  $repeat_words = array();
 
   $handle = fopen($file, "r");
-  if ($handle) {  //verify file exists
-    while (($line = fgets($handle)) !== false) {  // read file line by line
-      $lineLength = strlen($line);
-      for($i = 0; $i < $lineLength; $i++){  // read line char by char
-        $curChar = strtolower($line[$i]);
-        if( ctype_alpha($curChar) ){ // check if char is alphabetic
-          // check uni - char
-          if (array_key_exists($curChar, $uni)) {
-            $uni[$curChar]++;
-          }
-          else {
-            $uni[$curChar] = 1;
-          }
-          $charCount++;
 
-          // check bi - chars
-          if( $i+1 < $lineLength ){
-            $bi_currentChar = $curChar.strtolower($line[$i+1]);
-            if( ctype_alpha($bi_currentChar) ){
-              if (array_key_exists($bi_currentChar, $bi)) {
-                $bi[$bi_currentChar]++;
-              }
-              else {
-                $bi[$bi_currentChar] = 1;
-              }
-              $biCount++;
+  //verify file exists
+  if ($handle) {
+    // read file line by line
+    while (($line = fgets($handle)) !== false) {
+      // split line into words by space character
+      $wordArray = explode(" ", $line);
 
-              // check tri - chars
-              if( $i+2 < $lineLength ){
-                $tri_currentChar = $bi_currentChar.strtolower($line[$i+2]);
-                if( ctype_alpha($tri_currentChar) ){
-                  if (array_key_exists($tri_currentChar, $tri)) {
-                    $tri[$tri_currentChar]++;
+      // iterate over array
+      foreach ($wordArray as $w){
+        // replace all non alphabetic chars except single quote
+        $w = preg_replace("/[^a-z']+/i", "", $w);
+        // check if word contains alphabetic character
+        if(preg_match("/[a-z]/i", $w)){
+          $w = strtolower($w);
+          $wLength = strlen($w);
+          //insertIntoArray($words, $w, $wordCount);
+          if( array_key_exists($wLength, $words) ){
+            if( array_key_exists($w, $words[$wLength])){
+              $words[$wLength][$w]++;
+            }
+            else {
+              $words[$wLength][$w] = 0;
+            }
+          }
+          else{
+            $words[$wLength] = array();
+          }
+          $wordCount++;
+
+
+          //iterate over characters in string
+          for( $i = 0; $i < $wLength; $i++ ){
+            $c = $w[$i];
+            // check if char is alphabetic
+            if( ctype_alpha($c) ){
+              insertIntoArray($uni, $c, $charCount);
+
+              // check bi - chars
+              if( $i+1 < $wLength ){
+                $bi_char = $c."".$w[$i+1];
+                //check if char alphabetic
+                if( ctype_alpha($bi_char) ){
+                  insertIntoArray($bi, $bi_char, $biCount);
+
+                  if( $i+2 < $wLength ){
+                    $tri_char = $bi_char."".$w[$i+2];
+                    //check if char alphabetic
+                    if( ctype_alpha($tri_char) ){
+                      insertIntoArray($tri, $tri_char, $triCount);
+                    }
                   }
-                  else {
-                    $tri[$tri_currentChar] = 1;
-                  }
-                  $triCount++;
                 }
               }
             }
@@ -68,13 +96,33 @@ function freqanalysis($file){
   foreach ($uni as $key => $value) {
     $uni[$key] = $value/$charCount;
   }
+  foreach ($bi as $key => $value){
+    $bi[$key] = $value/$biCount;
+  }
+  foreach ($tri as $key => $value){
+    $tri[$key] = $value/$triCount;
+  }
+  foreach ($words as $key => $value){
+    foreach( $value as $k => $v ){
+      $words[$key][$k] = $v/$wordCount;
+    }
+    //$words[$key] = $value/$wordCount;
+  }
 
-  echo "</br></br>";
+  arsort($uni);
+  arsort($bi);
+  arsort($tri);
+  ksort($words);
+
+  echo "</br>|UNI|</br>";
   print_r($uni);
-  echo "</br></br>";
+  echo "</br>|BI|</br>";
   print_r($bi);
-  echo "</br></br>";
+  echo "</br>|TRI|</br>";
   print_r($tri);
+  echo "</br>|WORDS|</br>";
+  print_r($words);
+
   return $uni;
 }
 
