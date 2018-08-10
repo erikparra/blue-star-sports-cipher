@@ -142,29 +142,52 @@ class textAnalysis {
     arsort($this->repeat_words);
   }
 
-  public function printObject(){
+  public function printUni(){
     echo "<pre>";
     echo "|UNI|</br>";
-    //print_r($this->uni);
-    echo "</br></br>";
+    print_r($this->uni);
+    echo "</br></pre>";
+  }
+  public function printBi(){
+    echo "<pre>";
     echo "|BI|</br>";
-    //print_r($this->bi);
-    echo "</br></br>";
+    print_r($this->bi);
+    echo "</br></pre>";
+  }
+  public function printTri(){
+    echo "<pre>";
     echo "|TRI|</br>";
-    //print_r($this->tri);
-    echo "</br></br>";
+    print_r($this->tri);
+    echo "</br></pre>";
+  }
+  public function printQuote(){
+    echo "<pre>";
     echo "|QUOTE|</br>";
-    //print_r($this->quote_words);
-    echo "</br></br>";
+    print_r($this->quote_words);
+    echo "</br></pre>";
+  }
+  public function printRepeat(){
+    echo "<pre>";
     echo "|REPEAT|</br>";
     print_r($this->repeat_words);
-    echo "</br></br>";
+    echo "</br></pre>";
+  }
+  public function printWords(){
+    echo "<pre>";
     echo "|WORDS|</br>";
     print_r($this->words);
-    echo "</pre>";
+    echo "</br></pre>";
   }
 
 }
+
+
+
+
+
+
+
+
 
 function decryptText($cipher, $key){
   $file_contents = file_get_contents($cipher);
@@ -172,7 +195,9 @@ function decryptText($cipher, $key){
   for( $i = 0; $i < strlen($file_contents); $i++){
     $current_char = strtolower($file_contents[$i]);
     if( ctype_alpha($current_char) ){
-      $file_contents[$i] = $keyArray[$current_char];
+      if( array_key_exists($current_char, $key) ){
+        $file_contents[$i] = $key[$current_char];
+      }
     }
   }
 
@@ -180,31 +205,161 @@ function decryptText($cipher, $key){
   echo $file_contents;
 }
 
+$cipherText = "";
+if( isset($_GET["cipher"]) ){
+  $cipherText = $_GET["cipher"].".txt";
+}
+else{
+  $cipherText = "encrypted.txt";
+}
+
 $plain = new textAnalysis();
 $plain->frequencyAnalysis("plain.txt");
 $plain->sort();
-$plain->printObject();
+//$plain->printUni();
+//$plain->printBi();
+//$plain->printTri();
+//$plain->printQuote();
+//$plain->printRepeat();
+//$plain->printWords();
 
 $cipher = new textAnalysis();
-$cipher->frequencyAnalysis("encrypted.txt");
+$cipher->frequencyAnalysis($cipherText);
 $cipher->sort();
-//$cipher->printObject();
+//$cipher->printUni();
+//$cipher->printBi();
+//$cipher->printTri();
+//$cipher->printQuote();
+//$cipher->printRepeat();
+//$cipher->printWords();
 
 $key = array();
+
+
 
 // Reset both array key pointers
 reset($plain->uni);
 reset($cipher->uni);
 // Assign first 4 letters from plain freq analysis
-for( $i = 0; $i < 4; $i++){
+for( $i = 0; $i < 25; $i++){
     $key[key($cipher->uni)]=key($plain->uni);
     next($plain->uni);
     next($cipher->uni);
 }
 
+/*
+
+// Use single char words to narrow results
+reset($plain->words[1]);
+reset($cipher->words[1]);
+for( $i = 0; $i < 4; $i++){
+    $p = key($plain->words[1]);
+    $c = key($cipher->words[1]);
+    if( !array_key_exists($c, $key) ){
+      $key[$c] = $p;
+    }
+    next($plain->words[1]);
+    next($cipher->words[1]);
+}
+
+// Use 2 char freq analysis to narrow results
+reset($plain->bi);
+reset($cipher->bi);
+for( $i = 0; $i < 4; $i++){
+  $p = key($plain->bi);
+  $c = key($cipher->bi);
+  $count = 0;
+  for($j = 0; $j < strlen($p); $j++ ){
+    $count++;
+    if( $p[$j] == $c[$j] ) {
+      continue;
+    }
+    if( !array_key_exists($c[$j], $key) && $count < 5){
+      $key[$c[$j]] = $p[$j];
+    }
+  }
+  next($plain->bi);
+  next($cipher->bi);
+}
+
+// Use 2 char words to narrow results
+reset($plain->words[2]);
+reset($cipher->words[2]);
+for( $i = 0; $i < 4; $i++){
+  $p = key($plain->words[2]);
+  $c = key($cipher->words[2]);
+  for($j = 0; $j < strlen($p); $j++ ){
+    if( $p[$j] == $c[$j] ) {
+      continue;
+    }
+    if( !array_key_exists($c[$j], $key)){
+      $key[$c[$j]] = $p[$j];
+    }
+  }
+  next($plain->words[2]);
+  next($cipher->words[2]);
+}
+
+// Use 3 char freq analysis to narrow results
+reset($plain->tri);
+reset($cipher->tri);
+for( $i = 0; $i < 4; $i++){
+  $p = key($plain->tri);
+  $c = key($cipher->tri);
+  for($j = 0; $j < strlen($p); $j++ ){
+    if( $p[$j] == $c[$j] ) {
+      continue;
+    }
+    if( !array_key_exists($c[$j], $key)){
+      $key[$c[$j]] = $p[$j];
+    }
+  }
+  next($plain->tri);
+  next($cipher->tri);
+}
+
+// Use 3 char words to narrow results
+reset($plain->words[3]);
+reset($cipher->words[3]);
+for( $i = 0; $i < 4; $i++){
+  $p = key($plain->words[3]);
+  $c = key($cipher->words[3]);
+  for($j = 0; $j < strlen($p); $j++ ){
+    if( $p[$j] == $c[$j] ) {
+      continue;
+    }
+    if( !array_key_exists($c[$j], $key)){
+      $key[$c[$j]] = $p[$j];
+    }
+  }
+  next($plain->words[3]);
+  next($cipher->words[3]);
+}
+
+
+
+
+reset($plain->repeat_words);
+reset($cipher->repeat_words);
+for( $i = 0; $i < 10; $i++){
+  $p = key($plain->repeat_words);
+  $c = key($cipher->repeat_words);
+  for($j = 0; $j < strlen($p); $j++ ){
+    if( $p[$j] == $c[$j] ) {
+      continue;
+    }
+    if( !array_key_exists($c[$j], $key)){
+      $key[$c[$j]] = $p[$j];
+    }
+  }
+  next($plain->repeat_words);
+  next($cipher->repeat_words);
+}
+*/
+echo "|KEY|<pre>";
 print_r($key);
+echo "</pre>";
 
-
-
+decryptText($cipherText, $key);
 
 ?>
